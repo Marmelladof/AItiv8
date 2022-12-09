@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -11,6 +13,7 @@ import pre_processing as pp
 
 def main():
     # read dataset
+    os.chdir("ml_section")
     df = pd.read_csv("./resources/Crop_recommendation.csv")
 
     status = pp.check_dataset(df)
