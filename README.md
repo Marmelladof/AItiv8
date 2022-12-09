@@ -1,4 +1,5 @@
-# AItiv8
+# AItiv8 - Challenge 2 - SmartCities
+## Agricultural Planning
 
 > run from AItiv8 folder, otherwise it wont work
 > 
