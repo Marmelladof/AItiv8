@@ -38,7 +38,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/home/pedro/general/ai/challenge 2/ml_section/venv"
+VIRTUAL_ENV="/home/pedro/general/ai/challenge2/repo/AItiv8/ml_section/venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

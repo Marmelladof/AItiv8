@@ -30,7 +30,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/home/pedro/general/ai/challenge 2/ml_section/venv"
+set -gx VIRTUAL_ENV "/home/pedro/general/ai/challenge2/repo/AItiv8/ml_section/venv"
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH
