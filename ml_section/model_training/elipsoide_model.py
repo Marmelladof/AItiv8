@@ -3,22 +3,23 @@ from sklearn.cluster import KMeans
 import pandas as pd
 
 class ElipsoideModel():
-    def __init__(self):
+    def __init__(self, n_init):
         self.elipsoide_params = {}
+        self.cluster_centers = []
+        self.number_init = n_init
     
     def fit(self, X, y):
         classes = pd.unique(y["label"])
-        cluster_centers = []
         classes_order = []
         for c in classes:
-            kmeanModel = KMeans(n_clusters=1, n_init=10).fit(X.loc[y['label'] == c])
+            kmeanModel = KMeans(n_clusters=1, n_init=self.number_init).fit(X.loc[y['label'] == c])
             centroids = kmeanModel.cluster_centers_
-            cluster_centers.append(centroids)
+            self.cluster_centers.append(centroids)
             classes_order.append(c)
         
         i = 0
         for c in classes_order: 
-            centroid = cluster_centers[i][0]
+            centroid = self.cluster_centers[i][0]
             class_cluster = X.loc[y['label'] == c]
             features = class_cluster.columns.values
             semiaxis = []
@@ -32,8 +33,18 @@ class ElipsoideModel():
             self.elipsoide_params[str(c)] = {"center": centroid, "semiaxis": semiaxis}
         
 
+    def get_cluster_centers(self):
+        return self.cluster_centers
+
     def get_degree(self, point):
-        pass
-        #sum = 0
-        #for i in range(len(semiaxis)):
-        #    sum += ((point[i] - centroid[i])**2)/((semiaxis[i])**2)
+        alligiance = {}
+        for c in self.elipsoide_params:
+            sum = 0
+            for i in range(len(point)):
+                num = (point[i] - self.elipsoide_params[c]["center"][i])**2 
+                den = self.elipsoide_params[c]["semiaxis"][i]**2
+                sum += num/den
+            
+            alligiance[c] = 1/sum
+        
+        return alligiance

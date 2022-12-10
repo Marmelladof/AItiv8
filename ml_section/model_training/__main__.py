@@ -1,4 +1,5 @@
 import os
+import json
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -28,6 +29,9 @@ def main():
     le = LabelEncoder()
     y_encoded = le.fit_transform(y)
     labels_dict = utils.dictify_labels(le.inverse_transform(y_encoded), y_encoded)
+    with open("./results/encoded_labels.json", "w") as outputfile:
+        json.dump(labels_dict, outputfile)
+
     # converting back into a dataframe
     y_encoded = pd.DataFrame(y_encoded, columns=["label"])
 
@@ -39,11 +43,11 @@ def main():
     # converting back into a dataframe
     X_inter_reduced = pd.DataFrame(X_inter_reduced, columns=selected_features)
 
-    model1 = epm.ElipsoideModel()
+    model1 = epm.ElipsoideModel(n_init=10)
     model1.fit(X,y_encoded)
-
-    #ponto_aleatorio_arroz = [85, 58, 41, 21.770462, 80.319644, 7.038096, 226.655537]
-    #ponto_aleatorio_milho = [107, 34, 32, 26.774637, 66.413269, 6.780064, 177.774507]
+    alligiance = model1.get_degree([56,58,49,37.13165026,94.60761797,6.69215564,172.47880619999995])
+    with open("./results/elipsoide_method_alligiance.json", "w") as outputfile:
+        json.dump(alligiance, outputfile)
 
 if __name__ == "__main__":
     main()
