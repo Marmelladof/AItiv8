@@ -1,22 +1,39 @@
+from sklearn.cluster import KMeans
+
+import pandas as pd
 
 class ElipsoideModel():
-    cluster_centers = []
-    K = range(1,10)
-    for k in numeric_list:
-        kmeanModel = KMeans(n_clusters=1).fit(df.loc[df['label'] == k])
-        kmeanModel.fit(df.loc[df['label'] == k])
-        centroids = kmeanModel.cluster_centers_
-        cluster_centers.append(centroids)
+    def __init__(self):
+        self.elipsoide_params = {}
     
-    centroid = cluster_centers[0][0]
-    rice_cluster = df.loc[df['label'] == 0]
-    features = ["N", "P", "K", "temperature", "humidity", "ph", "rainfall"]
-    max_features = []
-    for feature in features:
-        max_features.append(rice_cluster[feature].max())
+    def fit(self, X, y):
+        classes = pd.unique(y["label"])
+        cluster_centers = []
+        classes_order = []
+        for c in classes:
+            kmeanModel = KMeans(n_clusters=1, n_init=10).fit(X.loc[y['label'] == c])
+            centroids = kmeanModel.cluster_centers_
+            cluster_centers.append(centroids)
+            classes_order.append(c)
+        
+        i = 0
+        for c in classes_order: 
+            centroid = cluster_centers[i][0]
+            class_cluster = X.loc[y['label'] == c]
+            features = class_cluster.columns.values
+            semiaxis = []
+            j = 0
+            for feature in features:
+                semiaxis.append(class_cluster[feature].max() - centroid[j])
+                j += 1
+            
+            i += 1
+            
+            self.elipsoide_params[str(c)] = {"center": centroid, "semiaxis": semiaxis}
+        
 
-    ponto_aleatorio_arroz = [85, 58, 41, 21.770462, 80.319644, 7.038096, 226.655537]
-    ponto_aleatorio_milho = [107, 34, 32, 26.774637, 66.413269, 6.780064, 177.774507]
-    sum = 0
-    for i in range(len(max_features)):
-        sum += ((ponto_aleatorio_milho[i] - centroid[i])**2)/((max_features[i])**2)
+    def get_degree(self, point):
+        pass
+        #sum = 0
+        #for i in range(len(semiaxis)):
+        #    sum += ((point[i] - centroid[i])**2)/((semiaxis[i])**2)
