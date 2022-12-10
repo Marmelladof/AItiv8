@@ -6,6 +6,6 @@ def dictify_labels(non_coded, coded):
 
     labels_dict = {}
     for i in range(len(non_coded_elm)):
-        labels_dict[non_coded_elm[i]] = coded_elm[i]
+        labels_dict[non_coded_elm[i]] = int(coded_elm[i])
 
     return labels_dict
