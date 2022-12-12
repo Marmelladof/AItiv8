@@ -18,7 +18,8 @@ class Model1():
     # dedicated to the elipsoide model
     def __init__(self, n_init, X_train, X_test, y_train, y_test):
         self.info = {
-            "model": "elipsoide model"
+            "model": "elipsoide model",
+            "n_classes": 22
             }
         self.model = epm.ElipsoideModel(n_init=n_init)
         self.model.fit(X_train,y_train)
@@ -68,7 +69,7 @@ def main():
 
     # divide data into training and testing
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y_encoded, test_size=0.2, random_state=50)
+        X, y_encoded, test_size=0.2, random_state=500)
 
     # training elipsoide model and saving trained model
     n_init = 10
