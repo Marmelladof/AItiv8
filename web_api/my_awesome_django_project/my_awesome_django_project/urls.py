@@ -15,7 +15,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from my_awesome_api.views import get_ideal_crop
 
 urlpatterns = [
     path('star-wars/', include('my_awesome_api.urls')),
+   path('crop_type', get_ideal_crop)
 ]
