@@ -40,14 +40,12 @@ def test_model1(model1):
     return validation, confusion_matrix
 
 def main():
-    prompt = input("Do you wish to refresh the models? (y/n): ")
-    if prompt == "y":
-        mtr.main()
-
+    # it only tests the available serialized models on resources/trained_models
     with open("./ml_section/resources/trained_models/model1.sav", "rb") as file:
         model1 = pickle.load(file)
     
     # begin testing models here
+    # elipsoide model
     validation, conf_matrix = test_model1(model1)
     conf_matrix = conf_matrix.astype(int)
     sucssess_rate = sum(validation)/len(validation)
@@ -61,9 +59,11 @@ def main():
     plt.xlabel('Predictions', fontsize=18)
     plt.ylabel('Actuals', fontsize=18)
     plt.title('Confusion Matrix', fontsize=18)
-    plt.show()
+    fig.savefig("./ml_section/images/confusion_matrix_model1.png")
 
-# just for testing
-# remove this line when model_testing is finished
-# add it on __main__.py on model_run
-main()
+    # NN
+    # (...)
+
+    model_data = {model1.info["model"]: sucssess_rate}
+
+    return model_data

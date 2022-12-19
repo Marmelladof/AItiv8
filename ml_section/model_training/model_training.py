@@ -39,7 +39,7 @@ class Model2():
 
 # (...)
 
-def main():
+def main(split, rndstate):
     # read dataset
     df = pd.read_csv("./ml_section/resources/Crop_recommendation.csv")
 
@@ -69,7 +69,7 @@ def main():
 
     # divide data into training and testing
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y_encoded, test_size=0.2, random_state=500)
+        X, y_encoded, test_size=split, random_state=rndstate)
 
     # training elipsoide model and saving trained model
     n_init = 10
