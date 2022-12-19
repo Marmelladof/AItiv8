@@ -62,12 +62,8 @@ def main():
     fig.savefig("./ml_section/images/confusion_matrix_model1.png")
 
     # NN
+    # (...)
 
     model_data = {model1.info["model"]: sucssess_rate}
 
     return model_data
-
-# just for testing
-# remove this line when model_testing is finished
-# add it on __main__.py on model_run
-main()
