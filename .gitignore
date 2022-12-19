@@ -1,2 +1,4 @@
 launch.py
-*/venv
+venv
+*.pyc
+web_api/my_awesome_django_project/my_awesome_api/migrations/
