@@ -48,7 +48,6 @@ def main(point):
     print(status)
 
     alligiance1 = run_model1(point)
-    print(alligiance1)
 
     return alligiance1
 
