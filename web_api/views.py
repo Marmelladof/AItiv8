@@ -26,8 +26,3 @@ def ideal_crop(request):
          serializer.save()
          crop_type = run_model1(list(data.values()))
          return Response(crop_type, status=status.HTTP_201_CREATED)
-
-   # print(data)
-   # crop_type = main(list(data.values()))
-   # return crop_type
-

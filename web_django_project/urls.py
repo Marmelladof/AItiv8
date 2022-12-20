@@ -18,6 +18,5 @@ from django.urls import path, include
 from web_api.views import ideal_crop
 
 urlpatterns = [
-    path('star-wars/', include('web_api.urls')),
     path('crop_type', ideal_crop)
 ]
