@@ -1,4 +1,5 @@
 launch.py
 venv
+__pycache__
 *.pyc
-web_api/my_awesome_django_project/my_awesome_api/migrations/
+web_api/web_django_project/web_api/migrations/

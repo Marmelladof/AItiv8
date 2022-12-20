@@ -1,4 +1,4 @@
-"""my_awesome_django_project URL Configuration
+"""web_django_project URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/4.1/topics/http/urls/
@@ -15,9 +15,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from my_awesome_api.views import get_ideal_crop
+from web_api.views import ideal_crop
 
 urlpatterns = [
-    path('star-wars/', include('my_awesome_api.urls')),
-   path('crop_type', get_ideal_crop)
+    path('star-wars/', include('web_api.urls')),
+    path('crop_type', ideal_crop)
 ]
