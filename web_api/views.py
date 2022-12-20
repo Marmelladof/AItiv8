@@ -7,7 +7,7 @@ from rest_framework.decorators import api_view
 from web_api.serializers import CropSerializer
 from web_api.models import Crop
 
-from ml_section.model_run.run_model import main, run_model1
+from ml_section.model_run.run_model import run_model1
 
 # Create your views here.
 
