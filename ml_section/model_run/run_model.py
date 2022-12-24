@@ -22,8 +22,8 @@ def refresh_models():
             # trains new model and serializes it
             mtr.main(prompt_split, prompt_rndstate)
             # tests the serialized model
-            model_data = mtt.main()
-            return model_data
+            model_data, model_data1 = mtt.main()
+            return model_data, model_data1
         else:
             prompt_split = float(input("Test split size: "))
             prompt_rndstate = int(input("Define random state: "))
@@ -39,17 +39,33 @@ def run_model1(point):
         model1 = pickle.load(file)
     
     alligiance = model1.model.get_degree(point)
+    return alligiance
+
+def run_model2(point):
+    # opens available serialized model 2
+    with open("./ml_section/resources/trained_models/model2.sav", "rb") as file:
+        model2 = pickle.load(file)
+    
+    alligiance = model2.get_degree(point)
 
     return alligiance
 
 def main(point):
     # this function needs to be incoporated in the UI
-    status = refresh_models()
+    status, status1 = refresh_models()
     print(status)
+    print("\n")
 
     alligiance1 = run_model1(list(point.values()))
     print(alligiance1)
-
+    print("\n")
+    
+    print(status1)
+    print("\n")
+    alligiance2 = run_model2(list(point.values()))
+    print(alligiance2)
+    
+    
     return alligiance1
 
 if __name__ == "__main__":

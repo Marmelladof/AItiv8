@@ -9,6 +9,12 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
+from sklearn.naive_bayes import GaussianNB
+from sklearn.model_selection import cross_val_score
+from sklearn.preprocessing import StandardScaler
+from sklearn.neural_network import MLPClassifier
+
+from sklearn import preprocessing
 
 import pre_processing as pp
 import utils
@@ -34,8 +40,36 @@ class Model1():
         return self.testing_data
 
 class Model2():
-    # similar to the above but to a neural network
-    pass
+    def __init__(self, X_train, X_test, y_train, y_test):
+        self.info={
+            "model": "Multi-layer Perceptron classifier",
+            "n_classes": 22
+        }
+        self.model = MLPClassifier(random_state=1, max_iter=300).fit(X_train, y_train)
+        self.training_data = {"X": X_train, "y": y_train}
+        self.testing_data = {"X": X_test, "y": y_test}
+    
+    def get_training_data(self):
+        return self.training_data
+    
+    def get_testing_data(self):
+        return self.testing_data
+    
+    def standand_point(self,point):
+        l_final =[]
+        l_final.append(point)
+        return preprocessing.scale(l_final)
+    def get_degree(self, point):
+        l_final=[]
+        # standard_point = self.standand_point(point)
+        # print(standard_point)
+        l_final.append(point)
+        dic={}
+        prediction_array = self.model.predict_proba(l_final)
+        for a in range(len(prediction_array[0])):
+            dic[str(a)] = prediction_array[0][a]
+        return dic
+    
 
 # (...)
 
@@ -76,8 +110,11 @@ def main(split, rndstate):
     model1 = Model1(n_init, X_train, X_test, y_train, y_test)
     with open("./ml_section/resources/trained_models/model1.sav", "wb") as file:
         pickle.dump(model1, file)
-
+        
     # training NN model and saving trained model
+    model2 = Model2(X_train, X_test, y_train, y_test)
+    with open("./ml_section/resources/trained_models/model2.sav", "wb") as file:
+        pickle.dump(model2, file)
     
     # training RF model and saving trained model
 
