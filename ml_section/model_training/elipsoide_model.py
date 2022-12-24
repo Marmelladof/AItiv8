@@ -45,6 +45,6 @@ class ElipsoideModel():
                 den = self.elipsoide_params[c]["semiaxis"][i]**2
                 sum += num/den
             
-            alligiance[c] = 1/sum
+            alligiance[c] = ((1.2 - sum)/1.2)*100
         
         return alligiance
