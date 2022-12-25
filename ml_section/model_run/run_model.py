@@ -29,9 +29,9 @@ def refresh_models():
             prompt_rndstate = int(input("Define random state: "))
             mtr.main(prompt_split, prompt_rndstate)
             # trains new model and serializes it
-            return None
+            return None, None
     else:
-        return None
+        return None, None
 
 def run_model1(point):
     # opens available serialized model 1
@@ -64,7 +64,6 @@ def main(point):
     print("\n")
     alligiance2 = run_model2(list(point.values()))
     print(alligiance2)
-    
     
     return alligiance1
 

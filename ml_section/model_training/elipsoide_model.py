@@ -41,10 +41,10 @@ class ElipsoideModel():
         for c in self.elipsoide_params:
             sum = 0
             for i in range(len(point)):
-                num = (point[i] - self.elipsoide_params[c]["center"][i])**2 
-                den = self.elipsoide_params[c]["semiaxis"][i]**2
+                num = (point[i] - self.elipsoide_params[c]["center"][i])**2
+                den = (self.elipsoide_params[c]["semiaxis"][i])**2
                 sum += num/den
             
-            alligiance[c] = ((1.2 - sum)/1.2)*100
+            alligiance[c] = 1/sum
         
         return alligiance

@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix as conf_matrix
 from sklearn.metrics import accuracy_score
 import seaborn as sns
+
 cwd = os.getcwd()
 sys.path.insert(0, cwd + "/ml_section/model_training/")
 
@@ -87,9 +88,6 @@ def main():
     plt.xlabel("Predicted")
     plt.ylabel("Actual")
     fig1.savefig("./ml_section/images/confusion_matrix_model2.png")
-    
-
-    
     
     model_data = {model1.info["model"]: sucssess_rate}
     model_data1 = {model2.info["model"]: accuracy_score}
