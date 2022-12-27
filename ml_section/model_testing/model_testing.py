@@ -24,7 +24,7 @@ def test_model1(model1):
     y_test = testing_data["y"]
 
     validation = []
-    confusion_matrix = np.zeros([n_classes, n_classes])
+    conf_matrix = np.zeros([n_classes, n_classes])
     count = 0
     tolerance_update = 10
     model1.model.elipsoide_tol = tolerance_update
@@ -42,11 +42,12 @@ def test_model1(model1):
         else:
             validation.append(False)
 
-        confusion_matrix[int(correct_value), int(highest_class)] += 1
+        conf_matrix[int(correct_value), int(highest_class)] += 1
 
+    conf_matrix = conf_matrix.astype(int)
     #print(f"List of n positives counts for tolerance of {model1.model.elipsoide_tol}: {n_positives}")
 
-    return validation, confusion_matrix
+    return validation, conf_matrix
 
 def test_model2(model2):
     n_classes = model2.info["n_classes"]
@@ -84,15 +85,10 @@ def main():
     # begin testing models here
     # elipsoide model
     validation, conf_matrix = test_model1(model1)
-    conf_matrix = conf_matrix.astype(int)
     sucssess_rate = sum(validation)/len(validation)
 
-    fig, ax = plt.subplots(figsize=(7.5, 7.5))
-    ax.matshow(conf_matrix, cmap=plt.cm.Blues, alpha=0.3)
-    for i in range(conf_matrix.shape[0]):
-        for j in range(conf_matrix.shape[1]):
-            ax.text(x=j, y=i,s=conf_matrix[i, j], va='center', ha='center', size='small')
-
+    fig = plt.figure(figsize=(8, 8))
+    sns.heatmap(conf_matrix, annot=True)
     plt.xlabel('Predictions', fontsize=18)
     plt.ylabel('Actuals', fontsize=18)
     plt.title('Confusion Matrix', fontsize=18)
@@ -102,16 +98,18 @@ def main():
     accuracy_score, conf_matrix = test_model2(model2)
     fig1 = plt.figure(figsize=(8,8))
     sns.heatmap(conf_matrix, annot=True)
-    plt.xlabel("Predicted")
-    plt.ylabel("Actual")
+    plt.xlabel("Predictions")
+    plt.ylabel("Actuals")
+    plt.title('Confusion Matrix', fontsize=18)
     fig1.savefig("./ml_section/images/confusion_matrix_model2.png")
     
     # Naive Bayes Model
     accuracy_score2, conf_matrix2 = test_model3(model3)
     fig2 = plt.figure(figsize=(8,8))
     sns.heatmap(conf_matrix2, annot=True)
-    plt.xlabel("Predicted")
-    plt.ylabel("Actual")
+    plt.xlabel("Predictions")
+    plt.ylabel("Actuals")
+    plt.title('Confusion Matrix', fontsize=18)
     fig2.savefig("./ml_section/images/confusion_matrix_model3.png")
     
     model_data = {model1.info["model"]: sucssess_rate}
