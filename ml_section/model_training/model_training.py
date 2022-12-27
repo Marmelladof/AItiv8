@@ -48,6 +48,7 @@ class Model2():
         self.model = MLPClassifier(random_state=1, max_iter=300).fit(X_train.values, y_train)
         self.training_data = {"X": X_train, "y": y_train}
         self.testing_data = {"X": X_test, "y": y_test}
+        self.tolerance = 0.6
     
     def get_training_data(self):
         return self.training_data
@@ -74,7 +75,7 @@ class Model3():
     def __init__(self, X_train, X_test, y_train, y_test):
         self.info={
             "model":"MultinomialNB Naive Bayes Classifier",
-            "n_classes":22
+            "n_classes": 22
         }
         self.model = MultinomialNB(force_alpha=True).fit(X_train.values, y_train)
         self.training_data = {"X": X_train, "y": y_train}
