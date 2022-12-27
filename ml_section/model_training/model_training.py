@@ -13,7 +13,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.neural_network import MLPClassifier
-
+from sklearn.naive_bayes import MultinomialNB
 from sklearn import preprocessing
 
 import pre_processing as pp
@@ -45,7 +45,7 @@ class Model2():
             "model": "Multi-layer Perceptron classifier",
             "n_classes": 22
         }
-        self.model = MLPClassifier(random_state=1, max_iter=300).fit(X_train, y_train)
+        self.model = MLPClassifier(random_state=1, max_iter=300).fit(X_train.values, y_train)
         self.training_data = {"X": X_train, "y": y_train}
         self.testing_data = {"X": X_test, "y": y_test}
     
@@ -69,8 +69,31 @@ class Model2():
         for a in range(len(prediction_array[0])):
             dic[str(a)] = prediction_array[0][a]
         return dic
-    
 
+class Model3():
+    def __init__(self, X_train, X_test, y_train, y_test):
+        self.info={
+            "model":"MultinomialNB Naive Bayes Classifier",
+            "n_classes":22
+        }
+        self.model = MultinomialNB(force_alpha=True).fit(X_train.values, y_train)
+        self.training_data = {"X": X_train, "y": y_train}
+        self.testing_data = {"X": X_test, "y": y_test}
+    def get_training_data(self):
+        return self.training_data
+
+    def get_testing_data(self):
+        return self.testing_data
+    
+    def get_degree(self, point):
+        l_final =[]
+        l_final.append(point)
+        dic={}
+        prediction_array = self.model.predict_proba(l_final)
+        for a in range(len(prediction_array[0])):
+            dic[str(a)] = prediction_array[0][a]
+        return dic
+            
 # (...)
 
 def main(split, rndstate):
@@ -117,6 +140,8 @@ def main(split, rndstate):
     with open("./ml_section/resources/trained_models/model2.sav", "wb") as file:
         pickle.dump(model2, file)
     
-    # training RF model and saving trained model
-
-    # training N-B model and saving trained model
+    # training Naive Baiyes model and saving trained model
+    model3 = Model3(X_train, X_test, y_train, y_test)
+    with open("./ml_section/resources/trained_models/model3.sav", "wb") as file:
+        pickle.dump(model3, file)
+    

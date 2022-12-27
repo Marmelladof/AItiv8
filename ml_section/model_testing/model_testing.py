@@ -58,6 +58,17 @@ def test_model2(model2):
     pred = model2.model.predict(X_test)
     
     return accuracy_score(pred, y_test), conf_matrix(y_test, pred)
+
+def test_model3(model3):
+    n_classes = model3.info["n_classes"]
+    testing_data = model3.get_testing_data()
+
+    X_test = testing_data["X"]
+    y_test = testing_data["y"]
+
+    pred = model3.model.predict(X_test)
+    
+    return accuracy_score(pred, y_test), conf_matrix(y_test, pred)
     
 def main():
     # it only tests the available serialized models on resources/trained_models
@@ -67,8 +78,8 @@ def main():
     with open("./ml_section/resources/trained_models/model2.sav", "rb") as file1:
         model2 = pickle.load(file1)
     
-    # with open("./ml_section/resources/trained_models/model3.sav", "rb") as file2:
-    #     model3 = pickle.load(file2)
+    with open("./ml_section/resources/trained_models/model3.sav", "rb") as file2:
+        model3 = pickle.load(file2)
     
     # begin testing models here
     # elipsoide model
@@ -87,7 +98,7 @@ def main():
     plt.title('Confusion Matrix', fontsize=18)
     fig.savefig("./ml_section/images/confusion_matrix_model1.png")
 
-    # KNN model
+    # NN model
     accuracy_score, conf_matrix = test_model2(model2)
     fig1 = plt.figure(figsize=(8,8))
     sns.heatmap(conf_matrix, annot=True)
@@ -95,6 +106,15 @@ def main():
     plt.ylabel("Actual")
     fig1.savefig("./ml_section/images/confusion_matrix_model2.png")
     
+    # Naive Bayes Model
+    accuracy_score2, conf_matrix2 = test_model3(model3)
+    fig2 = plt.figure(figsize=(8,8))
+    sns.heatmap(conf_matrix2, annot=True)
+    plt.xlabel("Predicted")
+    plt.ylabel("Actual")
+    fig2.savefig("./ml_section/images/confusion_matrix_model3.png")
+    
     model_data = {model1.info["model"]: sucssess_rate}
     model_data1 = {model2.info["model"]: accuracy_score}
-    return model_data, model_data1
+    model_data2 = {model3.info["model"]: accuracy_score2}
+    return model_data, model_data1,model_data2
