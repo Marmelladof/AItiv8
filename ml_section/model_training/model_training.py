@@ -22,12 +22,12 @@ import elipsoide_model as epm
 
 class Model1():
     # dedicated to the elipsoide model
-    def __init__(self, n_init, X_train, X_test, y_train, y_test):
+    def __init__(self, n_init, tol, X_train, X_test, y_train, y_test):
         self.info = {
             "model": "elipsoide model",
             "n_classes": 22
             }
-        self.model = epm.ElipsoideModel(n_init=n_init)
+        self.model = epm.ElipsoideModel(n_init, tol)
         self.model.fit(X_train,y_train)
 
         self.training_data = {"X": X_train, "y": y_train}
@@ -107,7 +107,8 @@ def main(split, rndstate):
 
     # training elipsoide model and saving trained model
     n_init = 10
-    model1 = Model1(n_init, X_train, X_test, y_train, y_test)
+    tol = 6
+    model1 = Model1(n_init, tol, X_train, X_test, y_train, y_test)
     with open("./ml_section/resources/trained_models/model1.sav", "wb") as file:
         pickle.dump(model1, file)
         

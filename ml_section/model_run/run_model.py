@@ -53,26 +53,24 @@ def run_model2(point):
 def main(point):
     # this function needs to be incoporated in the UI
     status, status1 = refresh_models()
+    
     print(status)
-    print("\n")
-
     alligiance1 = run_model1(list(point.values()))
     print(alligiance1)
-    print("\n")
     
     print(status1)
-    print("\n")
     alligiance2 = run_model2(list(point.values()))
     print(alligiance2)
     
     return alligiance1
 
 if __name__ == "__main__":
-    point = {"N" : 90,
-             "P" : 46,
-             "K": 42,
-             "temperature" : 23.97898217,
-             "humidity" : 81.45061596,
-             "ph" : 7.50283396,
-             "rainfall" : 250.0832336}
+    point = {"N" : 59,
+             "P" : 62,
+             "K": 52,
+             "temperature" : 43.675493,
+             "humidity" : 93.108872,
+             "ph" : 6.608668,
+             "rainfall" : 103.823566}
+
     alligiance1 = main(point)

@@ -25,20 +25,26 @@ def test_model1(model1):
 
     validation = []
     confusion_matrix = np.zeros([n_classes, n_classes])
+    count = 0
+    tolerance_update = 10
+    model1.model.elipsoide_tol = tolerance_update
+    n_positives = []
     for ipoint in range(X_test.shape[0]):
         point = np.array(X_test.iloc[ipoint])
         alligiance = model1.model.get_degree(point)
-        # print(alligiance)
         items = list(alligiance.items())
         values = list(alligiance.values())
         highest_class = items[values.index(max(values))][0]
         correct_value = str(y_test.iloc[ipoint][0])
         if highest_class == correct_value:            
             validation.append(True)
+            n_positives.append(sum([val > 0 for val in values]))
         else:
             validation.append(False)
 
         confusion_matrix[int(correct_value), int(highest_class)] += 1
+
+    #print(f"List of n positives counts for tolerance of {model1.model.elipsoide_tol}: {n_positives}")
 
     return validation, confusion_matrix
 

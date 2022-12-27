@@ -3,10 +3,11 @@ from sklearn.cluster import KMeans
 import pandas as pd
 
 class ElipsoideModel():
-    def __init__(self, n_init):
+    def __init__(self, n_init, tol):
         self.elipsoide_params = {}
         self.cluster_centers = []
         self.number_init = n_init
+        self.elipsoide_tol = tol
     
     def fit(self, X, y):
         classes = pd.unique(y["label"])
@@ -29,9 +30,8 @@ class ElipsoideModel():
                 j += 1
             
             i += 1
-            
+             
             self.elipsoide_params[str(c)] = {"center": centroid, "semiaxis": semiaxis}
-        
 
     def get_cluster_centers(self):
         return self.cluster_centers
@@ -45,6 +45,6 @@ class ElipsoideModel():
                 den = (self.elipsoide_params[c]["semiaxis"][i])**2
                 sum += num/den
             
-            alligiance[c] = 1/sum
+            alligiance[c] = (self.elipsoide_tol - sum)/self.elipsoide_tol
         
         return alligiance
