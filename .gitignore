@@ -4,3 +4,4 @@ __pycache__
 *.pyc
 web_api/web_django_project/web_api/migrations/
 env
+.vscode
