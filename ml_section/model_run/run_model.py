@@ -9,6 +9,7 @@ sys.path.insert(0, cwd + "/ml_section/model_testing/")
 # there are dependencies in model_traning for the unpickling
 # however, not necessary to run model_training/main() to run model_testing/main()
 # maybe it will receive parameters for optimization...
+
 import model_training as mtr
 import model_testing as mtt
 
@@ -22,16 +23,16 @@ def refresh_models():
             # trains new model and serializes it
             mtr.main(prompt_split, prompt_rndstate)
             # tests the serialized model
-            model_data, model_data1,model_data2 = mtt.main()
+            model_data, model_data1, model_data2 = mtt.main()
             return model_data, model_data1, model_data2
         else:
             prompt_split = float(input("Test split size: "))
             prompt_rndstate = int(input("Define random state: "))
             mtr.main(prompt_split, prompt_rndstate)
             # trains new model and serializes it
-            return None, None,None
+            return None, None, None
     else:
-        return None, None,None
+        return None, None, None
 
 def run_model1(point):
     # opens available serialized model 1
@@ -62,20 +63,13 @@ def run_model3(point):
 def main(point):
     # this function needs to be incoporated in the UI
     status, status1, status2 = refresh_models()
-    print(status)
-    alligiance1 = run_model1(list(point.values()))
-    print(alligiance1)
+    alligiance1 = run_model1(point)
     
-    print(status1)
-    alligiance2 = run_model2(list(point.values()))
-    print(alligiance2)
+    alligiance2 = run_model2(point)
     
-    print("\n")
-    print(status2)
-    print("\n")
-    alligiance3 = run_model3(list(point.values()))
-    print(alligiance3)
-    return alligiance1
+    alligiance3 = run_model3(point)
+    
+    return alligiance1, alligiance2, alligiance3
 
 if __name__ == "__main__":
     point = {"N" : 59,
