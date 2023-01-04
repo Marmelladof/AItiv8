@@ -162,7 +162,7 @@ def optimization(cleaned_soils, selected_crops, consumptions, total_crops, crop_
     # export objective function (DISCUSS RETURN OF THE EXPORT FUNCTION!!!!)
     export = func_export(crop_relevance ,crop_area)
 
-    total_func = interests["sustainability"]*sustainability + interests["variety"]*variety + interests["export"]*export - sum(divisions)
+    total_func = (interests["sustainability"]*sustainability + interests["variety"]*variety + interests["export"]*export)/(sum(divisions)/len(divisions))
 
 def main():
     soils = {"soil1": 
