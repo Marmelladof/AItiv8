@@ -1,6 +1,10 @@
 import os
 import sys
 import json
+import random
+
+import numpy as np
+import math
 
 cwd = os.getcwd()
 sys.path.insert(0, cwd + "/ml_section/model_run/")
@@ -41,96 +45,124 @@ class Collector():
             for st in self.selected_items:
                 self.cleaned_soils[cs][st] = self.cleaned_soils[cs][st]/tot_dict[cs]
 
-        return self.cleaned_soils, self.selected_items
+        # conversion to labels
+        with open("./ml_section/resources/encoded_labels.json") as file:
+            encoded_labels = json.load(file)
 
+        decoded_labels = {}
+        decoded_items = []
+        for soil in self.cleaned_soils:
+            decoded_labels[soil] = {}
+            for label in encoded_labels:
+                if str(encoded_labels[label]) in self.cleaned_soils[soil]:
+                    decoded_labels[soil][label] = self.cleaned_soils[soil][str(encoded_labels[label])]
+                    decoded_items.append(label)
 
-def prepare(interests, consumptions, soils, areas):
+        return decoded_labels, np.unique(decoded_items)
+
+def prepare(population, predictions):
     # assuming all arguments are dictionaries!
     colector = Collector()
-    for soil in soils:
-        point = list(soils[soil].values())
-        model1_degree, model2_degree, model3_degree = run_model.main(point)
-        colector.deposit_soil(model1_degree, 0)
+    for soil in predictions:
+        # soils will contain calculated point by the model
+        colector.deposit_soil(predictions[soil], 0)
     
+    # soils with the poderations per crop and added zeros in missing categories
+    # adimensional (percentage)
     cleaned_soils, selected_crops = colector.unpack_soils()
 
     print(f"Model 1 recomendations for each given soil: {cleaned_soils}.")
+    print(selected_crops)
 
-    tot = 0
-    for a in areas:
-        tot += areas[a]
-    for a in areas:
-        areas[a] = areas[a]/tot
+    # FROM NOW ON, LISTS ARE IN THE ORDER OF SELECTED_CROPS SET
 
-    print(areas)
-
-    tot = 0
-    relevant_consumptions = {}
+    # Self-Sustainability section
+    # map population to consumptions
+    consumptions = []
     for s in selected_crops:
-        tot += consumptions[s]
-    for s in selected_crops:
-        relevant_consumptions[s] = consumptions[s]/tot
+        consumptions.append((random.random()*3)*population)
 
-    print(relevant_consumptions)
+    # diversity equation proportional to n selected crops
+    # only enters in the main part of the search
+    total_crops = len(selected_crops)
 
-    diversity = 1/len(relevant_consumptions)
-
-    print(diversity)
-
+    # crop relevance in exportation
     with open("./pltn_section/resources/prices.json", "r") as file:
         prices = json.load(file)
     
-    tot = 0
-    relevant_prices_norm = {}
-    relevant_prices = {}
-    for s in selected_crops:
-        relevant_prices[s] = prices[s]
-        tot += prices[s]
-    for s in selected_crops:
-        relevant_prices_norm[s] = prices[s]/tot
-
-    print(relevant_prices)
-    print(relevant_prices_norm)
-
-    crop_ponderation = dict()
-    for s in selected_crops:
-        crop_ponderation[s] = sum(
-            [
-                interests["sustainability"]*relevant_consumptions[s],
-                interests["variety"]*diversity,
-                interests["export"]*relevant_prices_norm[s]
-            ]
-        )
-
-    print(crop_ponderation)
-
     with open("./pltn_section/resources/yield.json", "r") as file:
         crop_yields = json.load(file)
 
-    tot = 0
-    crop_yield_norm = {}
-    crop_yield = {}
+    crop_relevance = []
     for s in selected_crops:
-        crop_yield[s] = crop_yields[s]
-        tot += crop_yields[s]
-    for s in selected_crops:
-        crop_yield_norm[s] = crop_yields[s]/tot
+        # units €/m²
+        crop_relevance.append(prices[s]*crop_yields[s])
 
-    print(crop_yield)
-    print(crop_yield_norm)
 
-    for s in selected_crops:
-        crop_ponderation[s] = crop_ponderation[s]*crop_yield_norm[s]
+    return cleaned_soils, selected_crops, consumptions, total_crops, crop_relevance
+
+def func_sus(prod, cons):
+    # when consumption = production -> returns 1
+    # apply poisson filter
+    # filter_func = lambda x: (math.exp(-0.9)*0.9**x)/math.factorial(x)
+    filter_func = lambda x: x
+    # value between 0 and 1
+    return filter_func((np.sum(np.array(prod)/np.array(cons))/len(cons)))
+
+def func_vary(used_crops, total_crops):
+    # value between 0 and 1
+    return used_crops/total_crops
+
+def func_export(crop_relevance, crop_area):
+    # crop_area is the calculated area that a crop covers
+    # in a certain configuration
+
+    # units €
+    guito_per_crop = np.array(crop_relevance)*np.array(crop_area)
     
-    tot = 0
-    for c in crop_ponderation:
-        tot += crop_ponderation[c]
-    for c in crop_ponderation:
-        crop_ponderation[c] = crop_ponderation[c]/tot
+    # not sure tho...
+    return np.sum(guito_per_crop)
 
-    print(crop_ponderation)
+def optimization(cleaned_soils, selected_crops, consumptions, total_crops, crop_relevance, areas, interests):
+    # solution structure example:
+    # {
+    #   "soil1": ["rice"],
+    #   "soil2": ["rice", "jute"] ---> here there was a division!
+    #   "soil3": ["jute"]
+    # }
 
-    return cleaned_soils, crop_ponderation
+    with open("./pltn_section/resources/prices.json", "r") as file:
+        crop_prices = json.load(file)
+    
+    with open("./pltn_section/resources/yield.json", "r") as file:
+        crop_yields = json.load(file)
+
+    # hypothetical generated solution
+    solution = {}
+
+    prod = [0 for i in range(selected_crops)]
+    used_crops = []
+    crop_area = [0 for i in range(selected_crops)]
+    divisions_list = []
+    for soil in solution:
+        divisions = len(solution[soil])
+        divisions_list.append(divisions)
+        area_of_soil = areas[soil]
+        for crop in solution[soil]:
+            prod[selected_crops.index(crop)] += crop_yields[crop]*area_of_soil/divisions
+            crop_area[selected_crops.index(crop)] += area_of_soil/divisions
+            used_crops.append(crop)
+
+    used_crops = len(np.unique(used_crops))
+
+    # sustainability objective function calculation
+    sustainability = func_sus(prod, consumptions)
+    # variety objective function calculation
+    variety = func_vary(used_crops, len(selected_crops))
+    # export objective function (DISCUSS RETURN OF THE EXPORT FUNCTION!!!!)
+    export = func_export(crop_relevance ,crop_area)
+
+    total_func = interests["sustainability"]*sustainability + interests["variety"]*variety + interests["export"]*export - sum(divisions)
 
 def main():
     soils = {"soil1": 
@@ -167,30 +199,7 @@ def main():
         "soil3": 50
     }
 
-    consumptions = {
-        "0": 18,
-        "1": 12,
-        "2": 87,
-        "3": 98,
-        "4": 34,
-        "5": 45,
-        "6": 10,
-        "7": 68,
-        "8": 88,
-        "9": 22,
-        "10": 345,
-        "11": 290,
-        "12": 3,
-        "13": 7,
-        "14": 31,
-        "15": 42,
-        "16": 56,
-        "17": 23,
-        "18": 238,
-        "19": 439,
-        "20": 25,
-        "21": 4,
-    }
+    population = 100
 
     interests = {
         "sustainability": 0.4,
@@ -198,6 +207,13 @@ def main():
         "export": 0.2
     }
 
-    prepare(interests, consumptions, soils, areas)
+    predictions = {}
+    for soil in soils:
+        point = list(soils[soil].values())
+        model1_degree, model2_degree, model3_degree = run_model.main(point)
+        predictions[soil] = model1_degree
+
+    cleaned_soils, selected_crops, consumptions, total_crops, crop_relevance = prepare(population, predictions)
+    optimization(cleaned_soils, selected_crops, consumptions, total_crops, crop_relevance, areas, interests)
 
 main()
