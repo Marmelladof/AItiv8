@@ -5,3 +5,5 @@ __pycache__
 web_api/web_django_project/web_api/migrations/
 env
 .vscode
+
+/frontend/node_modules
