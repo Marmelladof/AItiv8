@@ -19,31 +19,35 @@ class Collector():
 
     def deposit_soil(self, prediction, inclusion):
         cleaned_soil = {}
+        sugestion = False
         for item in prediction:
             if prediction[item] > inclusion:
+                sugestion = True
                 cleaned_soil[item] = prediction[item]
                 self.selected_items.add(item)
         
+        if not sugestion:
+            values = list(prediction.values())
+            keys = list(prediction.keys())
+            least_worst_index = values.index(max(values))
+            least_worst_key = keys[least_worst_index]
+            cleaned_soil[least_worst_key] = prediction[least_worst_key]
+            self.selected_items.add(least_worst_key)
+
         self.n_soils += 1
         self.cleaned_soils["soil" + str(self.n_soils)] = cleaned_soil
 
         return self.cleaned_soils
 
     def unpack_soils(self):
-        tot_dict = {}
         for cs in self.cleaned_soils:
-            tot = 0
             for st in self.selected_items:
                 if not st in self.cleaned_soils[cs]:
                     self.cleaned_soils[cs][st] = 0
-            
-                tot += self.cleaned_soils[cs][st]
-
-            tot_dict[cs] = tot
 
         for cs in self.cleaned_soils:
             for st in self.selected_items:
-                self.cleaned_soils[cs][st] = self.cleaned_soils[cs][st]/tot_dict[cs]
+                self.cleaned_soils[cs][st] = self.cleaned_soils[cs][st]
 
         # conversion to labels
         with open("./ml_section/resources/encoded_labels.json") as file:
@@ -58,7 +62,7 @@ class Collector():
                     decoded_labels[soil][label] = self.cleaned_soils[soil][str(encoded_labels[label])]
                     decoded_items.append(label)
 
-        return decoded_labels, np.unique(decoded_items)
+        return decoded_labels, list(np.unique(decoded_items))
 
 def prepare(population, predictions):
     # assuming all arguments are dictionaries!
@@ -72,7 +76,6 @@ def prepare(population, predictions):
     cleaned_soils, selected_crops = colector.unpack_soils()
 
     print(f"Model 1 recomendations for each given soil: {cleaned_soils}.")
-    print(selected_crops)
 
     # FROM NOW ON, LISTS ARE IN THE ORDER OF SELECTED_CROPS SET
 
@@ -80,7 +83,7 @@ def prepare(population, predictions):
     # map population to consumptions
     consumptions = []
     for s in selected_crops:
-        consumptions.append((random.random()*3)*population)
+        consumptions.append((random.random()*2 + 1)*population)
 
     # diversity equation proportional to n selected crops
     # only enters in the main part of the search
@@ -105,13 +108,26 @@ def func_sus(prod, cons):
     # when consumption = production -> returns 1
     # apply poisson filter
     # filter_func = lambda x: (math.exp(-0.9)*0.9**x)/math.factorial(x)
-    filter_func = lambda x: x
+    # apply gaussian filter
+    mu = 1 # value to bring up
+    sigma = math.sqrt(mu) # to cut at 2 +/- mu
+    gauss_filter = lambda x: (math.exp((-(x-mu)**2)/(2*sigma**2))/(sigma*math.sqrt(2*math.pi)))/(1/(sigma*math.sqrt(2*math.pi)))
     # value between 0 and 1
-    return filter_func((np.sum(np.array(prod)/np.array(cons))/len(cons)))
+    return gauss_filter((np.sum(np.array(prod)/np.array(cons))/len(cons)))
 
-def func_vary(used_crops, total_crops):
-    # value between 0 and 1
-    return used_crops/total_crops
+def func_vary(prod, used_crops, total_crops):
+    prod_norm = list(map(lambda x: x/sum(prod), prod))
+
+    # gaussian filter
+    mu = 1/len(prod) # value to bring up
+    sigma = math.sqrt(0.05*mu) # to cut at 0.1 +/- mu
+    gauss_filter = lambda x: (math.exp((-(x-mu)**2)/(2*sigma**2))/(sigma*math.sqrt(2*math.pi)))/(1/(sigma*math.sqrt(2*math.pi)))
+    filtered_prod = list(map(gauss_filter, prod_norm))
+    weight_prod = sum(filtered_prod)/len(filtered_prod)
+
+    # used_crop/total_crop is between 0 and 1
+    # weight_prod is between 0 and 1
+    return weight_prod*used_crops/total_crops
 
 def func_export(crop_relevance, crop_area):
     # crop_area is the calculated area that a crop covers
@@ -123,26 +139,80 @@ def func_export(crop_relevance, crop_area):
     # not sure tho...
     return np.sum(guito_per_crop)
 
+def maximum_guito(cleaned_soils, selected_crops, crop_relevance, areas):
+    config = {}
+    max_guito = 0
+    for soil in cleaned_soils:
+        first_loop = True
+        for crop in cleaned_soils[soil]:
+            if first_loop:
+                if cleaned_soils[soil][crop] != 0:
+                    first_loop = False
+                    # it is not the best yet, but it is the first non null.
+                    # has the possibility of being the best
+                    best_crop = crop
+                    continue
+                else:
+                    continue
+
+            else: 
+                if cleaned_soils[soil][crop] != 0:
+                    if crop_relevance[selected_crops.index(crop)] > crop_relevance[selected_crops.index(best_crop)]:
+                        best_crop = crop
+        
+        max_guito += crop_relevance[selected_crops.index(best_crop)]*areas[soil]
+        config[soil] = [best_crop]
+
+    return max_guito, config
+
+def func_quality(cleaned_soils, solution):
+    adjustment = 0
+    soils_adjustment = []
+    for soil in solution:
+        counts = 0
+        for crop in solution[soil]:
+            counts += 1
+            adjustment += cleaned_soils[soil][crop]
+        
+        soils_adjustment.append(adjustment/counts)
+    
+    return sum(soils_adjustment)
+
+def genetic_algo(domain, areas):
+    pass
+
 def optimization(cleaned_soils, selected_crops, consumptions, total_crops, crop_relevance, areas, interests):
     # solution structure example:
     # {
     #   "soil1": ["rice"],
-    #   "soil2": ["rice", "jute"] ---> here there was a division!
-    #   "soil3": ["jute"]
+    #   "soil2": ["maize", "mothbeans"], ---> here there was a division!
+    #   "soil3": ["banana"]
     # }
-
-    with open("./pltn_section/resources/prices.json", "r") as file:
-        crop_prices = json.load(file)
     
     with open("./pltn_section/resources/yield.json", "r") as file:
         crop_yields = json.load(file)
 
+    max_guito, config = maximum_guito(cleaned_soils, selected_crops, crop_relevance, areas)
     # hypothetical generated solution
-    solution = {}
+    domain = {}
+    for soil in cleaned_soils:
+        domain[soil] = []
+        for crop in cleaned_soils[soil]:
+            if cleaned_soils[soil][crop] != 0:
+                domain[soil].append(cleaned_soils[soil][crop])
+    
+    print(domain)
 
-    prod = [0 for i in range(selected_crops)]
+    solution = {
+        "soil1": ["jute", "rice"],
+        "soil2": ["maize"],
+        "soil3": ["banana"]
+    }
+    # generate here a solution
+
+    prod = [0 for i in range(len(selected_crops))]
     used_crops = []
-    crop_area = [0 for i in range(selected_crops)]
+    crop_area = [0 for i in range(len(selected_crops))]
     divisions_list = []
     for soil in solution:
         divisions = len(solution[soil])
@@ -158,11 +228,20 @@ def optimization(cleaned_soils, selected_crops, consumptions, total_crops, crop_
     # sustainability objective function calculation
     sustainability = func_sus(prod, consumptions)
     # variety objective function calculation
-    variety = func_vary(used_crops, len(selected_crops))
-    # export objective function (DISCUSS RETURN OF THE EXPORT FUNCTION!!!!)
-    export = func_export(crop_relevance ,crop_area)
+    variety = func_vary(prod, used_crops, total_crops)
+    # export objective function
+    export = func_export(crop_relevance ,crop_area)/max_guito
+    # soil quality
+    soils_adjustment = func_quality(cleaned_soils, solution)
 
-    total_func = (interests["sustainability"]*sustainability + interests["variety"]*variety + interests["export"]*export)/(sum(divisions)/len(divisions))
+    # define hard constraint for divisions or minimal area
+    # define space for contructing solutions in the algorithm
+    # zeros do not count!
+    # negatives do count! be careful on the soils_adjustment function
+
+    total_func = soils_adjustment*(interests["sustainability"]*sustainability + interests["variety"]*variety + interests["export"]*export)
+
+    print(total_func)
 
 def main():
     soils = {"soil1": 
@@ -171,7 +250,7 @@ def main():
                  "P" : 48,
                  "K": 39,
                  "temperature" : 24.28209415,
-                 "humidity" : 81.30025587,
+                 "humidity" : 80.30025587,
                  "ph" : 7.1422990689999985,
                  "rainfall" : 231.0863347},
              "soil2":
