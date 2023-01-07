@@ -178,8 +178,31 @@ def func_quality(cleaned_soils, solution):
     
     return sum(soils_adjustment)
 
-def genetic_algo(domain, areas):
+def gen_population(domain, areas):
     pass
+
+def crossover(population):
+    for i in range(0, len(population), 2):
+        random_soil = random.choice(list(population[i].keys()))
+        swap1 = population[i][random_soil]
+        swap2 = population[i+1][random_soil]
+        population[i][random_soil] = swap2
+        population[i+1][random_soil] = swap1
+
+    return population
+
+def mutation(population, domain):
+    for i in range(len(population)):
+        mutation_chance = random.randint(1, 50)
+        if mutation_chance == 1:
+            random_soil = random.choice(list(population[i].keys()))
+            population[i][random_soil] = []
+            popped_crop = random.randint(0, len(domain[random_soil])-1)
+            population[i][random_soil].append(domain[random_soil].pop(popped_crop))
+            division_prob = random.randint(1, 2)
+            if len(domain[random_soil]) >= 1 and division_prob == 1:
+                popped_crop = random.randint(0, len(domain[random_soil])-1)
+                population[i][random_soil].append(popped_crop)
 
 def optimization(cleaned_soils, selected_crops, consumptions, total_crops, crop_relevance, areas, interests):
     # solution structure example:
@@ -188,12 +211,19 @@ def optimization(cleaned_soils, selected_crops, consumptions, total_crops, crop_
     #   "soil2": ["maize", "mothbeans"], ---> here there was a division!
     #   "soil3": ["banana"]
     # }
+    # {
+    #   "soil1": ["rice", "jute"],
+    #   "soil2": ["maize"], ---> here there was a division!
+    #   "soil3": ["banana"]
+    # }
+    #
+    # Cross-overs: swap respective soils at random;
+    # Mutation: select another available crop at random for on random soil;
     
     with open("./pltn_section/resources/yield.json", "r") as file:
         crop_yields = json.load(file)
 
     max_guito, config = maximum_guito(cleaned_soils, selected_crops, crop_relevance, areas)
-    # hypothetical generated solution
     domain = {}
     for soil in cleaned_soils:
         domain[soil] = []
@@ -203,45 +233,49 @@ def optimization(cleaned_soils, selected_crops, consumptions, total_crops, crop_
     
     print(domain)
 
-    solution = {
-        "soil1": ["jute", "rice"],
-        "soil2": ["maize"],
-        "soil3": ["banana"]
-    }
-    # generate here a solution
+    # generate initial population
+    population = []
 
-    prod = [0 for i in range(len(selected_crops))]
-    used_crops = []
-    crop_area = [0 for i in range(len(selected_crops))]
-    divisions_list = []
-    for soil in solution:
-        divisions = len(solution[soil])
-        divisions_list.append(divisions)
-        area_of_soil = areas[soil]
-        for crop in solution[soil]:
-            prod[selected_crops.index(crop)] += crop_yields[crop]*area_of_soil/divisions
-            crop_area[selected_crops.index(crop)] += area_of_soil/divisions
-            used_crops.append(crop)
+    while True:
+        # generate offspring (cross-over)
 
-    used_crops = len(np.unique(used_crops))
+        # mutations
 
-    # sustainability objective function calculation
-    sustainability = func_sus(prod, consumptions)
-    # variety objective function calculation
-    variety = func_vary(prod, used_crops, total_crops)
-    # export objective function
-    export = func_export(crop_relevance ,crop_area)/max_guito
-    # soil quality
-    soils_adjustment = func_quality(cleaned_soils, solution)
+        # selection
+        for solution in population:
+            prod = [0 for i in range(len(selected_crops))]
+            used_crops = []
+            crop_area = [0 for i in range(len(selected_crops))]
+            divisions_list = []
+            for soil in solution:
+                divisions = len(solution[soil])
+                divisions_list.append(divisions)
+                area_of_soil = areas[soil]
+                for crop in solution[soil]:
+                    prod[selected_crops.index(crop)] += crop_yields[crop]*area_of_soil/divisions
+                    crop_area[selected_crops.index(crop)] += area_of_soil/divisions
+                    used_crops.append(crop)
 
-    # define hard constraint for divisions or minimal area
-    # define space for contructing solutions in the algorithm
-    # zeros do not count!
-    # negatives do count! be careful on the soils_adjustment function
+            used_crops = len(np.unique(used_crops))
 
-    total_func = soils_adjustment*(interests["sustainability"]*sustainability + interests["variety"]*variety + interests["export"]*export)
+            # sustainability objective function calculation
+            sustainability = func_sus(prod, consumptions)
+            # variety objective function calculation
+            variety = func_vary(prod, used_crops, total_crops)
+            # export objective function
+            export = func_export(crop_relevance ,crop_area)/max_guito
+            # soil quality
+            soils_adjustment = func_quality(cleaned_soils, solution)
 
-    print(total_func)
+            # define hard constraint for divisions or minimal area
+            # define space for contructing solutions in the algorithm
+            # zeros do not count!
+            # negatives do count! be careful on the soils_adjustment function
+
+            total_func = soils_adjustment*(interests["sustainability"]*sustainability + interests["variety"]*variety + interests["export"]*export)
+        
+        # new population
+
 
 def main():
     soils = {"soil1": 
