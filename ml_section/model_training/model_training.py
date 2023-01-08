@@ -131,7 +131,7 @@ def main(split, rndstate):
 
     # training elipsoide model and saving trained model
     n_init = 10
-    tol = 15
+    tol = 25
     model1 = Model1(n_init, tol, X_train, X_test, y_train, y_test)
     with open("./ml_section/resources/trained_models/model1.sav", "wb") as file:
         pickle.dump(model1, file)
