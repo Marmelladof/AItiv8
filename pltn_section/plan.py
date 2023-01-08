@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import random
+import copy
 
 import numpy as np
 import math
@@ -178,16 +179,40 @@ def func_quality(cleaned_soils, solution):
     
     return sum(soils_adjustment)
 
-def gen_population(domain, areas):
-    pass
+def gen_population(domain):
+    population = []
+    n_sols = 5
+    for i in range(n_sols):
+        domain_copy = copy.deepcopy(domain)
+        population.append({})
+        for soil in domain_copy:
+            population[i][soil] = []
+            print(len(domain_copy[soil]))
+            print("-----")
+            print(len(domain[soil]))
+            popped_crop = random.randint(0, len(domain_copy[soil])-1)
+            population[i][soil].append(domain_copy[soil].pop(popped_crop))
+            division_prob = random.randint(1, 2)
+            while len(domain_copy[soil]) >= 1 and division_prob == 1 and len(population[i][soil]) <= 6:
+                popped_crop = random.randint(0, len(domain_copy[soil])-1)
+                population[i][soil].append(domain_copy[soil].pop(popped_crop))
+                
+                division_prob = random.randint(1, 2)
+
+    return population
 
 def crossover(population):
+    offspring = []
     for i in range(0, len(population), 2):
         random_soil = random.choice(list(population[i].keys()))
         swap1 = population[i][random_soil]
         swap2 = population[i+1][random_soil]
         population[i][random_soil] = swap2
         population[i+1][random_soil] = swap1
+        offspring.append(population[i])
+        offspring.append(population[i+1])
+
+    population = population + offspring
 
     return population
 
@@ -202,7 +227,9 @@ def mutation(population, domain):
             division_prob = random.randint(1, 2)
             if len(domain[random_soil]) >= 1 and division_prob == 1:
                 popped_crop = random.randint(0, len(domain[random_soil])-1)
-                population[i][random_soil].append(popped_crop)
+                population[i][random_soil].append(domain[random_soil].pop(popped_crop))
+    
+    return population
 
 def optimization(cleaned_soils, selected_crops, consumptions, total_crops, crop_relevance, areas, interests):
     # solution structure example:
@@ -229,19 +256,21 @@ def optimization(cleaned_soils, selected_crops, consumptions, total_crops, crop_
         domain[soil] = []
         for crop in cleaned_soils[soil]:
             if cleaned_soils[soil][crop] != 0:
-                domain[soil].append(cleaned_soils[soil][crop])
+                domain[soil].append(crop)
     
     print(domain)
 
     # generate initial population
-    population = []
+    population = gen_population(domain)
+    print(population)
 
     while True:
+        break
         # generate offspring (cross-over)
 
         # mutations
 
-        # selection
+        # calculating objective function
         for solution in population:
             prod = [0 for i in range(len(selected_crops))]
             used_crops = []
@@ -273,7 +302,10 @@ def optimization(cleaned_soils, selected_crops, consumptions, total_crops, crop_
             # negatives do count! be careful on the soils_adjustment function
 
             total_func = soils_adjustment*(interests["sustainability"]*sustainability + interests["variety"]*variety + interests["export"]*export)
+            print(total_func)
         
+        # selection
+
         # new population
 
 
