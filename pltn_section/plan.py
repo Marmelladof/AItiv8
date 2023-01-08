@@ -179,17 +179,13 @@ def func_quality(cleaned_soils, solution):
     
     return sum(soils_adjustment)
 
-def gen_population(domain):
+def gen_population(domain, n_sols):
     population = []
-    n_sols = 5
     for i in range(n_sols):
         domain_copy = copy.deepcopy(domain)
         population.append({})
         for soil in domain_copy:
             population[i][soil] = []
-            print(len(domain_copy[soil]))
-            print("-----")
-            print(len(domain[soil]))
             popped_crop = random.randint(0, len(domain_copy[soil])-1)
             population[i][soil].append(domain_copy[soil].pop(popped_crop))
             division_prob = random.randint(1, 2)
@@ -202,32 +198,35 @@ def gen_population(domain):
     return population
 
 def crossover(population):
-    offspring = []
-    for i in range(0, len(population), 2):
-        random_soil = random.choice(list(population[i].keys()))
-        swap1 = population[i][random_soil]
-        swap2 = population[i+1][random_soil]
-        population[i][random_soil] = swap2
-        population[i+1][random_soil] = swap1
-        offspring.append(population[i])
-        offspring.append(population[i+1])
+    population_copy = copy.deepcopy(population)
+    for i in range(0, len(population)-1, 2):
+        random_soil = random.choice(list(population_copy[i].keys()))
+        # print(f"Swapped {random_soil} in between solutions {i} and {i+1}")
+        swap1 = population_copy[i][random_soil]
+        swap2 = population_copy[i+1][random_soil]
+        population_copy[i][random_soil] = swap2
+        population_copy[i+1][random_soil] = swap1
 
-    population = population + offspring
+    population = population + population_copy
 
     return population
 
 def mutation(population, domain):
     for i in range(len(population)):
-        mutation_chance = random.randint(1, 50)
+        domain_copy = copy.deepcopy(domain)
+        mutation_chance = random.randint(1, len(population))
         if mutation_chance == 1:
             random_soil = random.choice(list(population[i].keys()))
+            # print(f"Mutation applied to solution {i} on {random_soil}")
             population[i][random_soil] = []
-            popped_crop = random.randint(0, len(domain[random_soil])-1)
-            population[i][random_soil].append(domain[random_soil].pop(popped_crop))
+            popped_crop = random.randint(0, len(domain_copy[random_soil])-1)
+            population[i][random_soil].append(domain_copy[random_soil].pop(popped_crop))
             division_prob = random.randint(1, 2)
-            if len(domain[random_soil]) >= 1 and division_prob == 1:
-                popped_crop = random.randint(0, len(domain[random_soil])-1)
-                population[i][random_soil].append(domain[random_soil].pop(popped_crop))
+            while len(domain_copy[random_soil]) >= 1 and division_prob == 1 and len(population[i][random_soil]) <= 5:
+                popped_crop = random.randint(0, len(domain_copy[random_soil])-1)
+                population[i][random_soil].append(domain_copy[random_soil].pop(popped_crop))
+                
+                division_prob = random.randint(1, 2)
     
     return population
 
@@ -240,7 +239,7 @@ def optimization(cleaned_soils, selected_crops, consumptions, total_crops, crop_
     # }
     # {
     #   "soil1": ["rice", "jute"],
-    #   "soil2": ["maize"], ---> here there was a division!
+    #   "soil2": ["maize"],
     #   "soil3": ["banana"]
     # }
     #
@@ -257,20 +256,25 @@ def optimization(cleaned_soils, selected_crops, consumptions, total_crops, crop_
         for crop in cleaned_soils[soil]:
             if cleaned_soils[soil][crop] != 0:
                 domain[soil].append(crop)
-    
-    print(domain)
 
     # generate initial population
-    population = gen_population(domain)
-    print(population)
+    n_sols = 6
+    population = gen_population(domain, n_sols)
 
-    while True:
-        break
+    iterations = 0
+    max_iterations = 150
+    while iterations <= max_iterations:
+        print("-------------------------")
+        print(f"Generation: {iterations}")
+
         # generate offspring (cross-over)
+        population = crossover(population)
 
         # mutations
+        population = mutation(population, domain)
 
         # calculating objective function
+        total_func = []
         for solution in population:
             prod = [0 for i in range(len(selected_crops))]
             used_crops = []
@@ -296,18 +300,36 @@ def optimization(cleaned_soils, selected_crops, consumptions, total_crops, crop_
             # soil quality
             soils_adjustment = func_quality(cleaned_soils, solution)
 
-            # define hard constraint for divisions or minimal area
-            # define space for contructing solutions in the algorithm
-            # zeros do not count!
-            # negatives do count! be careful on the soils_adjustment function
+            total_func.append(soils_adjustment*(interests["sustainability"]*sustainability + interests["variety"]*variety + interests["export"]*export))
 
-            total_func = soils_adjustment*(interests["sustainability"]*sustainability + interests["variety"]*variety + interests["export"]*export)
-            print(total_func)
-        
         # selection
+        offspring = []
+        offspring_vals = []
+        # chosing the best and worst randomly out of the total population
+        for i in range(n_sols):
+            prob_max_min = random.randint(1, 100)
+            # 80% probability of choosing a maximum
+            if prob_max_min <= 80:
+                print("Fetched a fit solution")
+                max_id_sol = total_func.index(max(total_func))
+                offspring_vals.append(total_func.pop(max_id_sol))
+                offspring.append(population[max_id_sol])
+
+            # 20% probability of choosing a minimum
+            else:
+                print("Fetched a non-fit solution")
+                min_id_sol = total_func.index(min(total_func))
+                offspring_vals.append(total_func.pop(min_id_sol))
+                offspring.append(population[min_id_sol])
 
         # new population
+        print(offspring)
+        print(offspring_vals)
+        total_func = []
+        population = []
+        population = population + offspring
 
+        iterations += 1
 
 def main():
     soils = {"soil1": 
@@ -341,7 +363,7 @@ def main():
     areas = {
         "soil1": 200,
         "soil2": 330,
-        "soil3": 50
+        "soil3": 90
     }
 
     population = 100
