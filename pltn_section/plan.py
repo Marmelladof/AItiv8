@@ -230,7 +230,7 @@ def mutation(population, domain):
     
     return population
 
-def optimization(cleaned_soils, selected_crops, consumptions, total_crops, crop_relevance, areas, interests):
+def optimization(predictions, areas, population, interests):
     # solution structure example:
     # {
     #   "soil1": ["rice"],
@@ -245,6 +245,7 @@ def optimization(cleaned_soils, selected_crops, consumptions, total_crops, crop_
     #
     # Cross-overs: swap respective soils at random;
     # Mutation: select another available crop at random for on random soil;
+    cleaned_soils, selected_crops, consumptions, total_crops, crop_relevance = prepare(population, predictions)
     
     with open("./pltn_section/resources/yield.json", "r") as file:
         crop_yields = json.load(file)
@@ -323,13 +324,16 @@ def optimization(cleaned_soils, selected_crops, consumptions, total_crops, crop_
                 offspring.append(population[min_id_sol])
 
         # new population
-        print(offspring)
-        print(offspring_vals)
         total_func = []
         population = []
         population = population + offspring
 
         iterations += 1
+    
+    solution_val = max(offspring_vals)
+    solution = offspring[offspring_vals.index(solution_val)]
+
+    return solution, solution_val
 
 def main():
     soils = {"soil1": 
@@ -380,7 +384,8 @@ def main():
         model1_degree, model2_degree, model3_degree = run_model.main(point)
         predictions[soil] = model1_degree
 
-    cleaned_soils, selected_crops, consumptions, total_crops, crop_relevance = prepare(population, predictions)
-    optimization(cleaned_soils, selected_crops, consumptions, total_crops, crop_relevance, areas, interests)
+    offspring, offspring_vals = optimization(predictions, areas, population, interests)
+    print(offspring)
+    print(offspring_vals)
 
 main()
