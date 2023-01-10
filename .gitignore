@@ -1,7 +1,7 @@
 launch.py
 venv
 __pycache__
-*.pyc
+.pyc
 web_api/web_django_project/web_api/migrations/
 env
 .vscode

@@ -15,8 +15,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from web_api.views import ideal_crop
+from web_api.views import ideal_crop, optimized_planning
 
 urlpatterns = [
-    path('crop_type', ideal_crop)
+    path('crop_type', ideal_crop),
+    path('optimized_planning', optimized_planning)
 ]
