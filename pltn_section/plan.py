@@ -332,8 +332,24 @@ def optimization(predictions, areas, population, interests):
     
     solution_val = max(offspring_vals)
     solution = offspring[offspring_vals.index(solution_val)]
+    prod = [0 for i in range(len(selected_crops))]
+    used_crops = []
+    crop_area = [0 for i in range(len(selected_crops))]
+    divisions_list = []
+    for soil in solution:
+        divisions = len(solution[soil])
+        divisions_list.append(divisions)
+        area_of_soil = areas[soil]
+        for crop in solution[soil]:
+            prod[selected_crops.index(crop)] += crop_yields[crop]*area_of_soil/divisions
+            crop_area[selected_crops.index(crop)] += area_of_soil/divisions
+            used_crops.append(crop)
+        
+    used_crops = list(np.unique(used_crops))
 
-    return solution, solution_val
+    guito_per_crop = list(np.array(crop_relevance)*np.array(crop_area))
+
+    return solution, solution_val, selected_crops, used_crops, prod, consumptions, guito_per_crop
 
 def main():
     soils = {"soil1": 
@@ -384,8 +400,7 @@ def main():
         model1_degree, model2_degree, model3_degree = run_model.main(point)
         predictions[soil] = model1_degree
 
-    offspring, offspring_vals = optimization(predictions, areas, population, interests)
-    print(offspring)
-    print(offspring_vals)
+    data = optimization(predictions, areas, population, interests)
+    print(data)
 
 main()
