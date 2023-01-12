@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { postCrop } from "../../api/apiList";
+
 const dados = [
   { label: "Area", type: "number" },
   {
@@ -28,8 +29,12 @@ const dados = [
     type: "number",
   },
 ];
+
 function Form(props) {
   const { register, handleSubmit } = useForm();
+
+  const [disabled, setDisabled] = useState(false);
+  const [editSend, setEditSend] = useState("Save");
 
   return (
     <div>
@@ -37,7 +42,7 @@ function Form(props) {
         <h1 class="text-xl font-bold text-white capitalize dark:text-white">
           Campo {props.formId}
         </h1>
-        <form onChange={handleSubmit((data) => formSaveHandler(data))}>
+        <form class="relative" onSubmit={handleSubmit((data) => formSaveHandler(data))}>
           <div class="grid grid-cols-1 gap-5 mt-4 sm:grid-cols-3">
             {dados.map((dado, i) => (
               <div>
@@ -45,7 +50,10 @@ function Form(props) {
                   {dado.label}
                 </label>
                 <input
-                  {...register(dado.label, { required: true })}
+                  {...register(dado.label, {
+                    required: true,
+                    disabled: disabled,
+                  })}
                   id={dado.label}
                   type={dado.type}
                   class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-300 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-500 focus:outline-none focus:ring"
@@ -53,6 +61,7 @@ function Form(props) {
               </div>
             ))}
           </div>
+          <button class="px-6 absolute bottom-5 right-0 py-2 leading-5 text-white transition-colors duration-200 transform bg-pink-500 rounded-md hover:bg-pink-700 focus:outline-none focus:bg-gray-600" type="submit">{editSend}</button>
           <div class="flex justify-end mt-6" />
         </form>
       </section>
@@ -60,9 +69,12 @@ function Form(props) {
   );
 
   function formSaveHandler(Parameters) {
-    let Space = props.formId;
-    let Field = { Space, Parameters };
-    props.onFormChange(Field, props.formId);
+    if(!disabled){
+      props.onFormChange(Parameters, props.formId);
+    }
+    disabled ? setDisabled(false) : setDisabled(true)
+    disabled ? setEditSend("Save") : setEditSend("Edit")
+    
   }
 }
 
