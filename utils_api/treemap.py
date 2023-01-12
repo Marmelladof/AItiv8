@@ -7,17 +7,20 @@ def plot_treemap(prediction, areas, tags):
 
     counter = 0
     for soil in prediction:
+        del soil["area"]
         key_list = list(soil)
         tracker = 0
         for key in key_list:
-            if soil[key] >= 0:
+            if key == "area":
+                continue
+            elif soil[key] >= 0:
                 tracker += 1
                 tags[counter] += "\n- {};".format(key)
         if tracker == 0:
             soil_values = list(soil.values())
             max_value = max(soil_values)
-            value = (i for i in soil if soil[i]==max_value)
-            tags[counter] += "\n(least worst idea)\n- {};".format(value)
+            value = ([i for i in soil if soil[i]==max_value])
+            tags[counter] += "\n(least worst idea)\n- {};".format(value[0])
         counter += 1
 
     squarify.plot(sizes=areas, label=tags, alpha=0.6 )

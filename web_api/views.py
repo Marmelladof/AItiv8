@@ -9,6 +9,7 @@ from django.http import HttpResponse
 from web_api.serializers import CropSerializer
 from web_api.models import CropSuggestion
 import json
+import copy
 
 from ml_section.model_run.run_model import run_model1
 from pltn_section.plan import optimization
@@ -44,11 +45,10 @@ def ideal_crop(request):
          key_list = list(prediction)
          for key in key_list:
             prediction[labels[key]] = prediction.pop(key)
-         prediction["area"] = areas[-1]
          crop_suggestions.append(prediction)
+         prediction["area"] = areas[-1]
          serializer = CropSerializer(data=prediction)
          if serializer.is_valid():
-            print("Saving to DB")
             serializer.save()
          else:
             print(crop_suggestions[-1])
