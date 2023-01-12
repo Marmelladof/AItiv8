@@ -3,7 +3,7 @@ import { useState } from "react";
 import { postCrop } from "../../api/apiList";
 
 const dados = [
-  { label: "Area", type: "number" },
+  { label: "area", type: "number" },
   {
     label: "N",
     type: "number",
@@ -13,19 +13,23 @@ const dados = [
     type: "number",
   },
   {
-    label: "Temperature",
+    label: "K",
     type: "number",
   },
   {
-    label: "Humidity",
+    label: "temperature",
     type: "number",
   },
   {
-    label: "PH",
+    label: "humidity",
     type: "number",
   },
   {
-    label: "Rainfall",
+    label: "ph",
+    type: "number",
+  },
+  {
+    label: "rainfall",
     type: "number",
   },
 ];
