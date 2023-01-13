@@ -10,8 +10,7 @@ const user = {
 }
 const navigation = [
   { name: 'Form', href: 'Form', current: true },
-  { name: 'City Info', href: 'Info', current: false },
-  { name: 'Model', href: '#', current: false },
+  { name: 'City Info', href: 'Info', current: false }
 ]
 
 function classNames(...classes) {
