@@ -94,11 +94,8 @@ def merge():
     from PIL import Image
     #Read the two images
     image1 = Image.open('final.png.')
-    image1.show()
     image2 = Image.open('cons_prod.png')
-    image2.show()
     image3 = Image.open('money.png')
-    image3.show()
     #resize, first image
     image1_size = image1.size
     image2_size = image2.size
@@ -111,4 +108,3 @@ def merge():
     new_image.paste(image2,(0,image1_size[1]))
     new_image.paste(image3,(0,image1_size[1] + image2_size[1]))
     new_image.save("merged_image.png","PNG")
-    new_image.show()
