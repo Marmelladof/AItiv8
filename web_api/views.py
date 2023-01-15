@@ -16,7 +16,8 @@ from pltn_section.plan import optimization
 from utils_api.treemap import (plot_treemap,
                                plot_money_bar_chart,
                                plot_cvp_bar_chart,
-                               plot_final_treemap)
+                               plot_final_treemap,
+                               merge)
 
 # Create your views here.
 
@@ -37,7 +38,7 @@ def ideal_crop(request):
       tags = []
       counter = 0
       for soil_data in data_values:
-         print(soil_data)
+         # print(soil_data)
          areas.append(soil_data["area"])
          del soil_data["area"]
 
@@ -83,9 +84,13 @@ def optimized_planning(request):
       plot_money_bar_chart(selected_crops, guito_per_crop)
       plot_cvp_bar_chart(selected_crops, prod, consumptions)
       plot_final_treemap(solution, areas)
-      image_data = open("final.png", "rb").read()
+      merge()
+      image_data = open("merged_image.png", "rb").read()
       import os
       os.remove("final.png")
+      os.remove("cons_prod.png")
+      os.remove("money.png")
+      os.remove("merged_image.png")
       return HttpResponse(image_data, content_type="image/png", status=status.HTTP_201_CREATED)
       
       

@@ -7,7 +7,6 @@ import numpy as np
 def plot_treemap(prediction, areas, tags):
 
     counter = 0
-    print(tags)
     for soil in prediction:
         del soil["area"]
         key_list = list(soil)
@@ -47,8 +46,6 @@ def plot_final_treemap(prediction, areas):
         for crop in prediction[key]:
             area_list.append(int(area/len(prediction[key])))
             tags.append(f"area{counter}\n{crop}")
-    print(area_list)
-    print(tags)
     squarify.plot(sizes=area_list, label=tags, alpha=0.6 )
     plt.title('Land distribution as Crop suggestions')
     plt.xlabel('meters')
@@ -81,8 +78,6 @@ def plot_money_bar_chart(selected_crops, guito_per_crop):
     Ymoney = guito_per_crop
 
     X_axis = np.arange(len(X))
-    print(X)
-    print(Ymoney)
     
     plt.figure(figsize=(10, 5))  # width:20, height:3
     plt.bar(X_axis, Ymoney, align='center', width=0.4)
@@ -94,3 +89,26 @@ def plot_money_bar_chart(selected_crops, guito_per_crop):
     plt.legend()
     plt.savefig("money.png")
     plt.clf()
+
+def merge():
+    from PIL import Image
+    #Read the two images
+    image1 = Image.open('final.png.')
+    image1.show()
+    image2 = Image.open('cons_prod.png')
+    image2.show()
+    image3 = Image.open('money.png')
+    image3.show()
+    #resize, first image
+    image1_size = image1.size
+    image2_size = image2.size
+    image3_size = image3.size
+    new_image = Image.new('RGB',
+                          (image1_size[0],
+                           image1_size[1] + image2_size[1] + image3_size[1]),
+                          (250,250,250))
+    new_image.paste(image1,(0,0))
+    new_image.paste(image2,(0,image1_size[1]))
+    new_image.paste(image3,(0,image1_size[1] + image2_size[1]))
+    new_image.save("merged_image.png","PNG")
+    new_image.show()
