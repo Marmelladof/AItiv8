@@ -91,6 +91,7 @@ function Form(props) {
                       {...register(dado.label, {
                         required: true,
                         disabled: disabled,
+                        valueAsNumber: true,
                       })}
                       id={dado.label}
                       type={dado.type}
@@ -114,6 +115,7 @@ function Form(props) {
                       {...register(dado.label, {
                         required: true,
                         disabled: disabled,
+                        valueAsNumber: true,
                       })}
                       id={dado.label}
                       type={dado.type}
