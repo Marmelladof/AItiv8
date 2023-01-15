@@ -35,14 +35,15 @@ function FormPage() {
   }
 
   const triggerSend = async () => {
-    console.log(formData);
     if (planning) {
       let response = await postPlanning(formData);
+      console.log(response);
       dispatch(addPlanning(formData));
       dispatch(saveFormPlanning());
       dispatch(addPlanningImage(response));
     } else {
       let response = await postCrop(formData);
+      console.log(response);
       dispatch(addCrop(formData));
       dispatch(saveForm());
       dispatch(addCropImage(response));
