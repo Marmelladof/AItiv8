@@ -7,3 +7,5 @@ env
 .vscode
 
 /frontend/node_modules
+db.sqlite3
+web_api/migrations/0001_initial.py
