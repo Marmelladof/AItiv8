@@ -13,7 +13,10 @@ import copy
 
 from ml_section.model_run.run_model import run_model1
 from pltn_section.plan import optimization
-from utils_api.treemap import plot_treemap
+from utils_api.treemap import (plot_treemap,
+                               plot_money_bar_chart,
+                               plot_cvp_bar_chart,
+                               plot_final_treemap)
 
 # Create your views here.
 
@@ -31,11 +34,10 @@ def ideal_crop(request):
       data_values = data
       areas = []
       crop_suggestions = []
-      tags = list(data_values.keys())
-      for key in tags:
-
-         soil_data = data_values[key]
-
+      tags = []
+      counter = 0
+      for soil_data in data_values:
+         print(soil_data)
          areas.append(soil_data["area"])
          del soil_data["area"]
 
@@ -52,6 +54,8 @@ def ideal_crop(request):
             serializer.save()
          else:
             print(crop_suggestions[-1])
+         counter += 1
+         tags.append(f"area{counter}")
       plot_treemap(crop_suggestions, areas, tags)
       image_data = open("delete.png", "rb").read()
       return HttpResponse(image_data, content_type="image/png", status=status.HTTP_201_CREATED)
@@ -72,8 +76,10 @@ def optimized_planning(request):
          areas[prediction["pk"]] = prediction["fields"]["area"]
          del prediction["fields"]["area"]
          predictions[prediction["pk"]] = prediction["fields"]
-      data = optimization(predictions, areas, population, data_values)
-      print(data)
+      solution, solution_val, selected_crops, used_crops, prod, consumptions, guito_per_crop = optimization(predictions, areas, population, data_values)
+      plot_money_bar_chart(selected_crops, guito_per_crop)
+      plot_cvp_bar_chart(selected_crops, prod, consumptions)
+      plot_final_treemap(solution, areas)
       return HttpResponse({"response": "Huge success!"}, status=status.HTTP_201_CREATED)
       
       
