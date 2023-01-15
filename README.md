@@ -10,6 +10,11 @@ python manage.py makemigrations
 python manage.py migrate
 ./manage.py runserver
 
+RUN WEBSITE
+cd frontend
+npm install
+npm start
+
 ENDPOINTS
 
 http://127.0.0.1:8000/crop_type
