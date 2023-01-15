@@ -14,29 +14,29 @@ import run_model
 
 class Collector():
     def __init__(self) -> None:
-        self.selected_items = set()
+        self.selected_items = []
         self.cleaned_soils = dict()
         self.n_soils = 0
 
-    def deposit_soil(self, prediction, inclusion):
+    def deposit_soil(self, prediction, soil, inclusion):
         cleaned_soil = {}
         sugestion = False
         for item in prediction:
             if prediction[item] > inclusion:
                 sugestion = True
                 cleaned_soil[item] = prediction[item]
-                self.selected_items.add(item)
+                self.selected_items.append(item)
         
         if not sugestion:
+            print("All negative! No good solution.")
             values = list(prediction.values())
             keys = list(prediction.keys())
             least_worst_index = values.index(max(values))
             least_worst_key = keys[least_worst_index]
             cleaned_soil[least_worst_key] = prediction[least_worst_key]
-            self.selected_items.add(least_worst_key)
+            self.selected_items.append(least_worst_key)
 
-        self.n_soils += 1
-        self.cleaned_soils["soil" + str(self.n_soils)] = cleaned_soil
+        self.cleaned_soils[soil] = cleaned_soil
 
         return self.cleaned_soils
 
@@ -46,37 +46,39 @@ class Collector():
                 if not st in self.cleaned_soils[cs]:
                     self.cleaned_soils[cs][st] = 0
 
-        for cs in self.cleaned_soils:
-            for st in self.selected_items:
-                self.cleaned_soils[cs][st] = self.cleaned_soils[cs][st]
+        #for cs in self.cleaned_soils:
+        #    for st in self.selected_items:
+        #        self.cleaned_soils[cs][st] = self.cleaned_soils[cs][st]
 
         # conversion to labels
-        with open("./ml_section/resources/encoded_labels.json") as file:
-            encoded_labels = json.load(file)
+        #with open("./ml_section/resources/encoded_labels.json") as file:
+        #    encoded_labels = json.load(file)
 
-        decoded_labels = {}
-        decoded_items = []
-        for soil in self.cleaned_soils:
-            decoded_labels[soil] = {}
-            for label in encoded_labels:
-                if str(encoded_labels[label]) in self.cleaned_soils[soil]:
-                    decoded_labels[soil][label] = self.cleaned_soils[soil][str(encoded_labels[label])]
-                    decoded_items.append(label)
+        #decoded_labels = {}
+        #decoded_items = []
+        #for soil in self.cleaned_soils:
+        #    decoded_labels[soil] = {}
+        #    for label in encoded_labels:
+        #        if str(encoded_labels[label]) in self.cleaned_soils[soil]:
+        #            decoded_labels[soil][label] = self.cleaned_soils[soil][str(encoded_labels[label])]
+        #            decoded_items.append(label)
+        
 
-        return decoded_labels, list(np.unique(decoded_items))
+        return self.cleaned_soils, list(np.unique(self.selected_items))
 
 def prepare(population, predictions):
     # assuming all arguments are dictionaries!
     colector = Collector()
     for soil in predictions:
         # soils will contain calculated point by the model
-        colector.deposit_soil(predictions[soil], 0)
+        colector.deposit_soil(predictions[soil], soil, 0)
     
     # soils with the poderations per crop and added zeros in missing categories
     # adimensional (percentage)
     cleaned_soils, selected_crops = colector.unpack_soils()
 
-    print(f"Model 1 recomendations for each given soil: {cleaned_soils}.")
+    # print(f"Model 1 recomendations for each given soil: {cleaned_soils}.")
+    # print(selected_crops)
 
     # FROM NOW ON, LISTS ARE IN THE ORDER OF SELECTED_CROPS SET
 
@@ -265,8 +267,8 @@ def optimization(predictions, areas, population, interests):
     iterations = 0
     max_iterations = 150
     while iterations <= max_iterations:
-        print("-------------------------")
-        print(f"Generation: {iterations}")
+        #print("-------------------------")
+        #print(f"Generation: {iterations}")
 
         # generate offspring (cross-over)
         population = crossover(population)
@@ -311,14 +313,14 @@ def optimization(predictions, areas, population, interests):
             prob_max_min = random.randint(1, 100)
             # 80% probability of choosing a maximum
             if prob_max_min <= 80:
-                print("Fetched a fit solution")
+                #print("Fetched a fit solution")
                 max_id_sol = total_func.index(max(total_func))
                 offspring_vals.append(total_func.pop(max_id_sol))
                 offspring.append(population[max_id_sol])
 
             # 20% probability of choosing a minimum
             else:
-                print("Fetched a non-fit solution")
+                #print("Fetched a non-fit solution")
                 min_id_sol = total_func.index(min(total_func))
                 offspring_vals.append(total_func.pop(min_id_sol))
                 offspring.append(population[min_id_sol])
@@ -351,56 +353,79 @@ def optimization(predictions, areas, population, interests):
 
     return solution, solution_val, selected_crops, used_crops, prod, consumptions, guito_per_crop
 
-def main():
-    soils = {"soil1": 
-                # rice
-                {"N" : 59,
-                 "P" : 48,
-                 "K": 39,
-                 "temperature" : 24.28209415,
-                 "humidity" : 80.30025587,
-                 "ph" : 7.1422990689999985,
-                 "rainfall" : 231.0863347},
-             "soil2":
-                # maize
-                {"N" : 64,
-                 "P" : 35,
-                 "K": 23,
-                 "temperature" : 23.02038334,
-                 "humidity" : 61.89472002,
-                 "ph" : 5.680361037999999,
-                 "rainfall" : 63.03843397},
-             "soil3":
-                # banana
-                {"N" : 95,
-                 "P" : 74,
-                 "K": 50,
-                 "temperature" : 25.90113128,
-                 "humidity" : 80.47152737,
-                 "ph" : 6.002481605,
-                 "rainfall" : 110.10323}}
+# def main():
+#     #soils = {"soil1": 
+#     #            # rice
+#     #            {"N" : 59,
+#     #             "P" : 48,
+#     #             "K": 39,
+#     #             "temperature" : 24.28209415,
+#     #             "humidity" : 80.30025587,
+#     #             "ph" : 7.1422990689999985,
+#     #             "rainfall" : 231.0863347},
+#     #         "soil2":
+#     #            # maize
+#     #            {"N" : 64,
+#     #             "P" : 35,
+#     #             "K": 23,
+#     #             "temperature" : 23.02038334,
+#     #             "humidity" : 61.89472002,
+#     #             "ph" : 5.680361037999999,
+#     #             "rainfall" : 63.03843397},
+#     #         "soil3":
+#     #            # banana
+#     #            {"N" : 95,
+#     #             "P" : 74,
+#     #             "K": 50,
+#     #             "temperature" : 25.90113128,
+#     #             "humidity" : 80.47152737,
+#     #             "ph" : 6.002481605,
+#     #            "rainfall" : 110.10323}}
 
-    areas = {
-        "soil1": 200,
-        "soil2": 330,
-        "soil3": 90
-    }
+#     areas = {
+#         "soil1": 200,
+#         "soil2": 330,
+#         "soil3": 90
+#     }
 
-    population = 100
+#     population = 100
 
-    interests = {
-        "sustainability": 0.4,
-        "variety": 0.4,
-        "export": 0.2
-    }
+#     interests = {
+#         "sustainability": 0.4,
+#         "variety": 0.4,
+#         "export": 0.2
+#     }
 
-    predictions = {}
-    for soil in soils:
-        point = list(soils[soil].values())
-        model1_degree, model2_degree, model3_degree = run_model.main(point)
-        predictions[soil] = model1_degree
+#     #predictions = {}
+#     #for soil in soils:
+#     #    point = list(soils[soil].values())
+#     #    model1_degree, model2_degree, model3_degree = run_model.main(point)
+#     #    predictions[soil] = model1_degree
+#     predictions = {"16":{
+#         "apple":-62.43993815437476,
+#         "banana":-5.5980370257636825,
+#         "blackgram":-5.427152061740048,
+#         "chickpea":-1.3916505519489915,
+#         "coconut":-9.457737305835531,
+#         "coffee":-0.8187847632211338,
+#         "cotton":-5.675964695501701,
+#         "grapes":-77.09596943982712,
+#         "jute":-1.0305843749397874,
+#         "kidneybeans":-1.1621848976837554,
+#         "lentil":-5.696647248381201,
+#         "maize":-1.4934071983003647,
+#         "mango":-2.56755717383554,
+#         "mothbeans":-2.0135060633490816,
+#         "mungbean":-11.238418210807838,
+#         "muskmelon":-40.81081199518549,
+#         "orange":-29.945882694489228,
+#         "papaya":-29.452976518363347,
+#         "pigeonpeas":-1.3357605336000646,
+#         "pomegranate":-9.373243666901672,
+#         "rice":-20.475226283624988,
+#         "watermelon":-8.725627463813085
+#     }}
+#     data = optimization(predictions, areas, population, interests)
+#     print(data)
 
-    data = optimization(predictions, areas, population, interests)
-    print(data)
-
-main()
+# main()
