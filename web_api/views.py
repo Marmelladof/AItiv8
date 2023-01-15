@@ -68,6 +68,7 @@ def optimized_planning(request):
 
    if request.method == 'POST':
       data_values = request.data
+      data_values = data_values[0]
       population = data_values["population"]
       del data_values["population"]
       raw_data = serializers.serialize("json", CropSuggestion.objects.all())
@@ -79,6 +80,11 @@ def optimized_planning(request):
          del prediction["fields"]["area"]
          predictions[prediction["pk"]] = prediction["fields"]
       solution, solution_val, selected_crops, used_crops, prod, consumptions, guito_per_crop = optimization(predictions, areas, population, data_values)
+      print("\n\n")
+      print(solution)
+      print(selected_crops)
+      print(used_crops)
+      print("\n\n")
       plot_money_bar_chart(selected_crops, guito_per_crop)
       plot_cvp_bar_chart(selected_crops, prod, consumptions)
       plot_final_treemap(solution, areas)
