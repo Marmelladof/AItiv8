@@ -80,14 +80,12 @@ def optimized_planning(request):
          del prediction["fields"]["area"]
          predictions[prediction["pk"]] = prediction["fields"]
       solution, solution_val, selected_crops, used_crops, prod, consumptions, guito_per_crop = optimization(predictions, areas, population, data_values)
-      print("\n\n")
-      print(solution)
-      print(selected_crops)
-      print(used_crops)
-      print("\n\n")
       plot_money_bar_chart(selected_crops, guito_per_crop)
       plot_cvp_bar_chart(selected_crops, prod, consumptions)
       plot_final_treemap(solution, areas)
-      return HttpResponse({"response": "Huge success!"}, status=status.HTTP_201_CREATED)
+      image_data = open("final.png", "rb").read()
+      import os
+      os.remove("final.png")
+      return HttpResponse(image_data, content_type="image/png", status=status.HTTP_201_CREATED)
       
       
