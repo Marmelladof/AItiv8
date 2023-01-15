@@ -1,7 +1,8 @@
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import squarify
 import numpy as np
-
 
 def plot_treemap(prediction, areas, tags):
 

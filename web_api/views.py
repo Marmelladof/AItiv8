@@ -58,6 +58,8 @@ def ideal_crop(request):
          tags.append(f"area{counter}")
       plot_treemap(crop_suggestions, areas, tags)
       image_data = open("delete.png", "rb").read()
+      import os
+      os.remove("delete.png")
       return HttpResponse(image_data, content_type="image/png", status=status.HTTP_201_CREATED)
 
 
