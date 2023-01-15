@@ -3,29 +3,44 @@ import { createSlice } from "@reduxjs/toolkit";
 export const form = createSlice({
   name: "form",
   initialState: {
-    initialForm: false,
-    savedCrop:[],
-    savedPlanning:[],
+    isCrop: false,
+    isPlanning: false,
+    savedCrop: [],
+    savedPlanning: [],
+    cropImage: "",
+    planningImage: "",
   },
   reducers: {
+    saveFormPlanning: (state) => {
+      state.isPlanning = true;
+    },
     saveForm: (state) => {
-      state.initialForm = true;
+      state.isCrop = true;
     },
-    incrementByAmount: (state, action) => {
-      state.value += action.payload;
-    },
-    addCrop: (state,action) => {
+    addCrop: (state, action) => {
       state.savedCrop.push(action.payload);
     },
     addPlanning: (state, action) => {
       state.savedPlanning.push(action.payload);
-    }
+    },
+    addCropImage: (state, action) => {
+      state.cropImage = action.payload;
+    },
+    addPlanningImage: (state, action) => {
+      state.planningImage = action.payload;
+    },
   },
 });
 
-
 // Action creators are generated for each case reducer function
-export const { saveForm, incrementByAmount, addCrop, addPlanning } = form.actions;
+export const {
+  saveForm,
+  saveFormPlanning,
+  addCropImage,
+  addCrop,
+  addPlanning,
+  addPlanningImage,
+} = form.actions;
 
 export const state = (state) => state;
 

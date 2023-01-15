@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { postCrop } from "../../api/apiList";
-import { state, saveForm } from "../../redux/FormSlicer";
+import { state, saveForm, saveFormPlanning } from "../../redux/FormSlicer";
 import { useSelector, useDispatch } from "react-redux";
 
 const dados = [
@@ -36,14 +36,24 @@ const dados = [
   },
 ];
 const dadosPlan = [
-  { label: "trocu", type: "number" },
+  { label: "population", type: "number" },
   {
-    label: "321",
+    label: "sustainability",
     type: "number",
+    min: 0,
+    max: 100,
   },
   {
-    label: "dsadas a",
+    label: "value",
     type: "number",
+    min: 0,
+    max: 100,
+  },
+  {
+    label: "variety",
+    type: "number",
+    min: 0,
+    max: 100,
   },
 ];
 
@@ -53,21 +63,21 @@ function Form(props) {
   const [disabled, setDisabled] = useState(false);
   const [editSend, setEditSend] = useState("Save");
 
-  const formState = useSelector(state).form.initialForm;
+  const cropSaved = useSelector(state).form.isCrop;
   const dispatch = useDispatch();
+
   return (
     <div>
       <section class="max-w-4xl p-6 mx-auto bg-indigo-600 rounded-md shadow-md dark:bg-gray-800 mt-20">
-        <button onClick={() => dispatch(saveForm())}>Alterar state</button>
         <h1 class="text-xl font-bold text-white capitalize dark:text-white">
-          Campo {props.formId}
+          Field {props.formId + 1}
         </h1>
         <form
           class="relative"
           onSubmit={handleSubmit((data) => formSaveHandler(data))}
         >
           <div class="grid grid-cols-1 gap-5 mt-4 sm:grid-cols-3">
-            {formState
+            {cropSaved
               ? dadosPlan.map((dado, i) => (
                   <div>
                     <label
@@ -85,6 +95,8 @@ function Form(props) {
                       id={dado.label}
                       type={dado.type}
                       step={0.00000000000001}
+                      min={dado.min}
+                      max={dado.max}
                       class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-300 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-500 focus:outline-none focus:ring"
                     />
                   </div>
@@ -125,7 +137,7 @@ function Form(props) {
 
   function formSaveHandler(Parameters) {
     if (!disabled) {
-      props.onFormChange(Parameters, formState, props.formId);
+      props.onFormChange(Parameters, cropSaved, props.formId);
     }
     disabled ? setDisabled(false) : setDisabled(true);
     disabled ? setEditSend("Save") : setEditSend("Edit");

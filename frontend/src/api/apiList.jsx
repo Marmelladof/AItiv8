@@ -9,7 +9,8 @@ export const postCrop = async (payload) => {
 };
 
 export const postPlanning = async (payload) => {
-  let url = baseUrl + "optimized_planning";
+  // let url = baseUrl + "optimized_planning";
+  let url = "https://85febffd-a07e-4718-8df8-0164313ee004.mock.pstmn.io";
   return await axios.post(url, payload);
 };
 
